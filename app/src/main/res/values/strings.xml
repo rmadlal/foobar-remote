@@ -12,13 +12,13 @@
     <string name="error_field_required">This field is required</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions." </string>
-    <string name="launcher_description">"launch foobar</string>
-    <string name="play_pause_description">"play</string>
-    <string name="prev_description">"prev</string>
-    <string name="next_description">"next</string>
-    <string name="volup_description">"volup</string>
-    <string name="voldown_description">"voldown</string>
-    <string name="exit_description">"close</string>
+    <string name="launcher_description">"LAUNCH</string>
+    <string name="play_pause_description">"PLAY_PAUSE</string>
+    <string name="prev_description">"PREV</string>
+    <string name="next_description">"NEXT</string>
+    <string name="volup_description">"VOL_UP</string>
+    <string name="voldown_description">"VOL_DOWN</string>
+    <string name="exit_description">"DISC</string>
     <string name="checkBox">Currently playing?</string>
 
 </resources>

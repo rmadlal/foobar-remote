@@ -4,8 +4,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.ConnectException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -14,11 +19,12 @@ import android.os.IBinder;
 import android.util.Log;
 
 public class SocketService extends IntentService {
-    String serverIP; //your computer IP address should be written here
-    int serverPort;
+    //String serverIP; //your computer IP address should be written here
+    //int serverPort;
     InputStreamReader in = null;
     OutputStreamWriter out = null;
     Socket socket = null;
+    int connectionAttemptCounter;
 
     public SocketService() {
         super("Server");
@@ -31,11 +37,13 @@ public class SocketService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        int connectionAttemptCounter = 0;
         try {
-            Log.v("TCP Client", "C: Connecting...");
             connectionAttemptCounter++;
-            socket = new Socket(serverIP, serverPort);
+            String serverIP = intent.getStringExtra("ip");
+            int serverPort = intent.getIntExtra("port", 5050);
+            SocketAddress addr = new InetSocketAddress(serverIP, serverPort);
+            socket = new Socket();
+            socket.connect(addr, 2000);
             synchronized (LoginActivity.class) {
                 LoginActivity.class.notifyAll();
             }
@@ -43,19 +51,24 @@ public class SocketService extends IntentService {
             in = new InputStreamReader(socket.getInputStream());
             out = new OutputStreamWriter(socket.getOutputStream());
         } catch (ConnectException e) {
-            if (connectionAttemptCounter == 3) {
-                Log.e("TCP Client", "Connection refused 3 times. Aborting.");
-            } else {
+            if (connectionAttemptCounter < 3) {
                 Log.v("TCP Client", "Connection refused. Retrying.");
                 onHandleIntent(intent);
+            } else {
+                Log.e("TCP Client", "Connection refused 3 times. Aborting.");
             }
-        } catch (Exception e) {
+        } catch (SocketTimeoutException e) {
+            Log.e("TCP Client", "Connection timed out. Aborting.");
+        } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            synchronized (LoginActivity.class) {
+                LoginActivity.class.notifyAll();
+            }
         }
     }
 
     private final IBinder myBinder = new LocalBinder();
-   // TCPClient mTcpClient = new TCPClient();
 
     class LocalBinder extends Binder {
         SocketService getService() {
@@ -69,15 +82,16 @@ public class SocketService extends IntentService {
         super.onCreate();
     }
 
-    public void sendMessage(byte message) {
+    public boolean sendMessage(byte message) {
         try {
             if (out != null) {
                 out.write(message);
                 out.flush();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     public byte getResponse() {
@@ -85,17 +99,20 @@ public class SocketService extends IntentService {
         try {
             if (in != null)
                 response = (byte) in.read();
-        } catch (Exception e) {
-            Log.e("TCP", "S: Error", e);
+        } catch (IOException e) {
+            Log.e("TCP Client", "No response from server");
         }
         return response;
+    }
+
+    public boolean isConnected() {
+        return socket.isConnected();
     }
 
     @Override
     public int onStartCommand(Intent intent,int flags, int startId){
         super.onStartCommand(intent, flags, startId);
-        serverIP = intent.getStringExtra("ip");
-        serverPort = intent.getIntExtra("port", 5050);
+        connectionAttemptCounter = 0;
         return START_STICKY;
     }
 
@@ -108,7 +125,7 @@ public class SocketService extends IntentService {
 
     private void disconnect() {
         try {
-            if (socket != null) {
+            if (socket != null && socket.isConnected()) {
                 socket.shutdownOutput();
                 socket.shutdownInput();
                 socket.close();

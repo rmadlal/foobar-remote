@@ -57,7 +57,6 @@ public class FoobarActivity extends AppCompatActivity {
 
     private void doUnbindService() {
         if (mBoundService != null) {
-            //mBoundService.onDestroy();
             unbindService(mConnection);
         }
     }
@@ -116,39 +115,22 @@ public class FoobarActivity extends AppCompatActivity {
         int id = mButton.getId();
 
         mAuthTask = new InputTask();
-        mAuthTask.execute(buttonIdToByte(id));
+        mAuthTask.execute(buttonDescToByte(mButton.getContentDescription().toString()));
 
         if (id == R.id.closeButton) {
-            Toast.makeText(this, "Connection closed", Toast.LENGTH_SHORT).show();
             finish();
-            return;
         }
         if (id == R.id.playButton || id == R.id.pauseButton || (id == R.id.nextButton && playVisible))
             crossfadePlayPause();
     }
 
-    private byte buttonIdToByte(int id) {
-        switch (id) {
-            case R.id.launchButton:
-                return LAUNCH;
-            case R.id.playButton:
-                return PLAY_PAUSE;
-            case R.id.pauseButton:
-                return PLAY_PAUSE;
-            case R.id.nextButton:
-                return NEXT;
-            case R.id.prevButton:
-                return PREV;
-            case R.id.volUpButton:
-                return VOL_UP;
-            case R.id.volDownButton:
-                return VOL_DOWN;
-            case R.id.closeButton:
-                return DISC;
-            default:
-                return -1;
-
+    private byte buttonDescToByte(String desc) {
+        try {
+            return getClass().getField(desc).getByte(null);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return -1;
     }
 
     private void crossfadePlayPause() {

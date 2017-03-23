@@ -219,12 +219,12 @@ public class LoginActivity extends AppCompatActivity {
             synchronized (LoginActivity.class) {
                 // Simulate network access.
                 try {
-                    LoginActivity.class.wait(2000);
+                    LoginActivity.class.wait();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-            return mBoundService.socket != null;
+            return mBoundService != null && mBoundService.isConnected();
         }
 
         @Override
