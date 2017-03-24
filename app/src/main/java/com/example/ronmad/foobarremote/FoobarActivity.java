@@ -6,7 +6,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -26,7 +25,6 @@ public class FoobarActivity extends AppCompatActivity {
     public static final byte ACK = 8;
 
     SocketService mBoundService;
-    InputTask mAuthTask = null;
     ImageButton mButton = null;
 
     private ImageButton playButton;
@@ -60,28 +58,6 @@ public class FoobarActivity extends AppCompatActivity {
         }
     }
 
-    private class InputTask extends AsyncTask<Byte, Void, Boolean> {
-
-        byte response;
-
-         @Override
-        protected Boolean doInBackground(Byte... params) {
-             mBoundService.sendMessage(params[0]);
-             response = mBoundService.getResponse();
-             return response == ACK;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            super.onPostExecute(success);
-            mAuthTask = null;
-            if (!success) {
-                Toast.makeText(getApplicationContext(), "Connection lost", Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,8 +83,11 @@ public class FoobarActivity extends AppCompatActivity {
         mButton = (ImageButton) view;
         int id = mButton.getId();
 
-        mAuthTask = new InputTask();
-        mAuthTask.execute(buttonDescToByte(mButton.getContentDescription().toString()));
+        mBoundService.sendMessage(buttonDescToByte(mButton.getContentDescription().toString()));
+        if (mBoundService.hasDisconnected()) {
+            Toast.makeText(getApplicationContext(), "Connection lost", Toast.LENGTH_SHORT).show();
+            finish();
+        }
 
         if (id == R.id.closeButton) {
             finish();

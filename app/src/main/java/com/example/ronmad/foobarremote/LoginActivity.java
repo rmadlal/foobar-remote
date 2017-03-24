@@ -30,6 +30,8 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.SocketException;
 
 public class LoginActivity extends AppCompatActivity {
@@ -124,9 +126,10 @@ public class LoginActivity extends AppCompatActivity {
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            String[] loginInfo = {ip, port};
-            mAuthTask = new UserLoginTask(intent);
-            mAuthTask.execute(loginInfo);
+            SocketAddress addr = new InetSocketAddress(ip, Integer.parseInt(port));
+            intent.putExtra("Address", addr);
+            mAuthTask = new UserLoginTask();
+            mAuthTask.execute();
         }
     }
 
@@ -199,21 +202,14 @@ public class LoginActivity extends AppCompatActivity {
         mBoundService = null;
     }
 
-    private class UserLoginTask extends AsyncTask<String, Void, Boolean> {
+    private class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
-        Intent intent;
-
-        UserLoginTask(Intent intent) {
-            this.intent = intent;
-        }
+        Intent serviceIntent;
 
         @Override
-        protected Boolean doInBackground(String... params) {
-            String ip = params[0];
-            int port = Integer.parseInt(params[1]);
-            Intent serviceIntent = new Intent(getApplicationContext(), SocketService.class);
-            serviceIntent.putExtra("ip", ip);
-            serviceIntent.putExtra("port", port);
+        protected Boolean doInBackground(Void... params) {
+            serviceIntent = new Intent(getApplicationContext(), SocketService.class);
+            serviceIntent.putExtra("Address", intent.getSerializableExtra("Address"));
             startService(serviceIntent);
             doBindService();
             synchronized (LoginActivity.class) {
@@ -240,6 +236,7 @@ public class LoginActivity extends AppCompatActivity {
             if (success) {
                 startActivity(intent);
             } else {
+                stopService(serviceIntent);
                 doUnbindService();
                 mPortView.requestFocus();
                 Toast.makeText(getApplicationContext(), "Connection failed", Toast.LENGTH_LONG).show();

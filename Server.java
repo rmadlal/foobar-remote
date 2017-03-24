@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 
 public class Server {
 
@@ -46,6 +47,8 @@ public class Server {
             }
             close();
             System.out.println("Connection closed");
+        } catch (SocketException e) {
+            System.out.println(e.getMessage());
         } catch (IOException e) {
             e.printStackTrace();
         }
