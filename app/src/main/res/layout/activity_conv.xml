@@ -17,7 +17,7 @@
         android:background="@android:color/transparent"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
-        android:onClick="sendMessage"/>
+        android:onClick="sendMessage" />
 
     <ImageButton
         android:id="@+id/launchButton"
@@ -32,7 +32,7 @@
         android:background="@android:color/transparent"
         android:layout_alignParentEnd="false"
         android:layout_marginTop="75dp"
-        android:onClick="sendMessage"/>
+        android:onClick="sendMessage" />
 
     <ImageButton
         android:id="@+id/playButton"
@@ -61,7 +61,7 @@
         android:background="@android:color/transparent"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
-        android:onClick="sendMessage"/>
+        android:onClick="sendMessage" />
 
     <ImageButton
         android:id="@+id/prevButton"
@@ -74,7 +74,7 @@
         android:background="@android:color/transparent"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
-        android:onClick="sendMessage"/>
+        android:onClick="sendMessage" />
 
 
 
@@ -89,14 +89,14 @@
         android:background="@android:color/transparent"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
-        android:onClick="sendMessage"/>
+        android:onClick="sendMessage" />
 
     <Space
         android:id="@+id/space2"
         android:layout_width="10dp"
         android:layout_height="60dp"
         android:layout_below="@id/playButton"
-        android:layout_centerHorizontal="true"/>
+        android:layout_centerHorizontal="true" />
 
     <ImageButton
         android:id="@+id/volDownButton"
@@ -109,7 +109,7 @@
         android:background="@android:color/transparent"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
-        android:onClick="sendMessage"/>
+        android:onClick="sendMessage" />
 
     <ImageButton
         android:id="@+id/volUpButton"
@@ -122,6 +122,6 @@
         android:background="@android:color/transparent"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
-        android:onClick="sendMessage"/>
+        android:onClick="sendMessage" />
 
 </RelativeLayout>

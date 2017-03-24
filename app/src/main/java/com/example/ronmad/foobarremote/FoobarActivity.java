@@ -32,8 +32,7 @@ public class FoobarActivity extends AppCompatActivity {
     private ImageButton playButton;
     private ImageButton pauseButton;
     private int mShortAnimationDuration;
-    private View toHide, toAppear;
-    private boolean playVisible;
+    private boolean isPlaying;
 
     private ServiceConnection mConnection = new ServiceConnection() {
         @Override
@@ -88,25 +87,19 @@ public class FoobarActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_conv);
         doBindService();
+
+        isPlaying = getIntent().getBooleanExtra("isPlaying", false);
         playButton = (ImageButton) findViewById(R.id.playButton);
         pauseButton = (ImageButton) findViewById(R.id.pauseButton);
-        boolean isPlaying = getIntent().getBooleanExtra("isPlaying", false);
-        if (isPlaying) {
-            playButton.setVisibility(View.INVISIBLE);
-            pauseButton.setVisibility(View.VISIBLE);
-            playVisible = false;
-        }
-        else {
-            playButton.setVisibility(View.VISIBLE);
-            pauseButton.setVisibility(View.GONE);
-            playVisible = true;
-        }
+        playButton.setVisibility(isPlaying ? View.INVISIBLE : View.VISIBLE);
+        pauseButton.setVisibility(isPlaying ? View.VISIBLE : View.INVISIBLE);
+
         mShortAnimationDuration = getResources().getInteger(android.R.integer.config_shortAnimTime);
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onDestroy() {
+        super.onDestroy();
         doUnbindService();
     }
 
@@ -120,7 +113,7 @@ public class FoobarActivity extends AppCompatActivity {
         if (id == R.id.closeButton) {
             finish();
         }
-        if (id == R.id.playButton || id == R.id.pauseButton || (id == R.id.nextButton && playVisible))
+        if (id == R.id.playButton || id == R.id.pauseButton || (id == R.id.nextButton && !isPlaying))
             crossfadePlayPause();
     }
 
@@ -134,14 +127,10 @@ public class FoobarActivity extends AppCompatActivity {
     }
 
     private void crossfadePlayPause() {
-        if (playVisible) {
-            toHide = playButton;
-            toAppear = pauseButton;
-        }
-        else {
-            toAppear = playButton;
-            toHide = pauseButton;
-        }
+        isPlaying = !isPlaying;
+        final View toHide = isPlaying ? playButton : pauseButton;
+        final View toAppear = isPlaying ? pauseButton : playButton;
+
         final float fullScale = toHide.getScaleX();
         toAppear.setAlpha(0f);
         toAppear.setScaleX(0f);
@@ -163,14 +152,8 @@ public class FoobarActivity extends AppCompatActivity {
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animator) {
-                        if (toHide == playButton)
-                            toHide.setVisibility(View.INVISIBLE);
-                        else
-                            toHide.setVisibility(View.GONE);
+                        toHide.setVisibility(View.INVISIBLE);
                     }
                 });
-        playVisible = !playVisible;
     }
-
 }
-

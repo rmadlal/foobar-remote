@@ -19,8 +19,6 @@ import android.os.IBinder;
 import android.util.Log;
 
 public class SocketService extends IntentService {
-    //String serverIP; //your computer IP address should be written here
-    //int serverPort;
     InputStreamReader in = null;
     OutputStreamWriter out = null;
     Socket socket = null;
@@ -73,7 +71,6 @@ public class SocketService extends IntentService {
     class LocalBinder extends Binder {
         SocketService getService() {
             return SocketService.this;
-
         }
     }
 
@@ -122,7 +119,6 @@ public class SocketService extends IntentService {
         disconnect();
     }
 
-
     private void disconnect() {
         try {
             if (socket != null && socket.isConnected()) {
@@ -138,5 +134,4 @@ public class SocketService extends IntentService {
             e.printStackTrace();
         }
     }
-
 }
