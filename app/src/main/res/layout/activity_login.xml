@@ -44,7 +44,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:imeActionId="@+id/login"
-                android:imeActionLabel="@string/action_sign_in_short"
+                android:imeActionLabel="@string/action_sign_in"
                 android:imeOptions="actionUnspecified"
                 android:selectAllOnFocus="true"
                 android:inputType="number"
@@ -55,7 +55,7 @@
                 android:id="@+id/checkBox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/checkBox"
+                android:text="@string/checkbox_text"
                 android:layout_marginTop="16dp" />
 
             <Button

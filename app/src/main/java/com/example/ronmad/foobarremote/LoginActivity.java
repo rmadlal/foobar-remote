@@ -10,33 +10,23 @@ import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
-
-
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.net.SocketException;
 
 public class LoginActivity extends AppCompatActivity {
 
     private UserLoginTask mAuthTask = null;
+    private SocketAddress addr = null;
 
     // UI references.
     private EditText mIPView;
@@ -44,7 +34,8 @@ public class LoginActivity extends AppCompatActivity {
     private View mProgressView;
     private View mLoginFormView;
     private Intent intent;
-    SocketService mBoundService;
+
+    private SocketService mBoundService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,32 +45,19 @@ public class LoginActivity extends AppCompatActivity {
         // Set up the login form.
         mIPView = (EditText) findViewById(R.id.ip);
         mPortView = (EditText) findViewById(R.id.port);
-        mPortView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
-                    return true;
-                }
-                return false;
+        mPortView.setOnEditorActionListener((textView, id, keyEvent) -> {
+            if (id == R.id.login || id == EditorInfo.IME_NULL) {
+                attemptLogin();
+                return true;
             }
+            return false;
         });
 
         Button mIPSignInButton = (Button) findViewById(R.id.ip_sign_in_button);
-        mIPSignInButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptLogin();
-            }
-        });
+        mIPSignInButton.setOnClickListener(view -> attemptLogin());
 
-        CheckBox isPlaying = (CheckBox) findViewById(R.id.checkBox);
-        isPlaying.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                intent.putExtra("isPlaying", b);
-            }
-        });
+        CheckBox isPlayingBox = (CheckBox) findViewById(R.id.checkBox);
+        isPlayingBox.setOnCheckedChangeListener((compoundButton, b) -> intent.putExtra(getString(R.string.isplaying_intent_extra_key), b));
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
@@ -126,8 +104,7 @@ public class LoginActivity extends AppCompatActivity {
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            SocketAddress addr = new InetSocketAddress(ip, Integer.parseInt(port));
-            intent.putExtra("Address", addr);
+            addr = new InetSocketAddress(ip, Integer.parseInt(port));
             mAuthTask = new UserLoginTask();
             mAuthTask.execute();
         }
@@ -173,32 +150,25 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private ServiceConnection mConnection = new ServiceConnection() {
-        //EDITED PART
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mBoundService = ((SocketService.LocalBinder)service).getService();
-
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             mBoundService = null;
         }
-
     };
 
     private void doBindService() {
-        if(mBoundService==null)
+        if(mBoundService == null)
             bindService(new Intent(this, SocketService.class), mConnection, Context.BIND_AUTO_CREATE);
     }
 
     private void doUnbindService() {
-        try {
-            unbindService(mConnection);
-        }
-        catch (RuntimeException e) {
-            return;
-        }
+        if (mBoundService == null) return;
+        unbindService(mConnection);
         mBoundService = null;
     }
 
@@ -209,11 +179,10 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
             serviceIntent = new Intent(getApplicationContext(), SocketService.class);
-            serviceIntent.putExtra("Address", intent.getSerializableExtra("Address"));
+            serviceIntent.putExtra(getString(R.string.socketaddress_intent_extra_key), addr);
             startService(serviceIntent);
             doBindService();
             synchronized (LoginActivity.class) {
-                // Simulate network access.
                 try {
                     LoginActivity.class.wait();
                 } catch (InterruptedException e) {

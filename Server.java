@@ -8,27 +8,30 @@ import java.net.SocketException;
 
 public class Server {
 
-    public static final byte LAUNCH = 1;
-    public static final byte PLAY_PAUSE = 2;
-    public static final byte NEXT = 3;
-    public static final byte PREV = 4;
-    public static final byte VOL_UP = 5;
-    public static final byte VOL_DOWN = 6;
-    public static final byte DISC = 7;
-    public static final byte ACK = 8;
+    static final int LAUNCH = 1;
+    static final int PLAY_PAUSE = 2;
+    static final int NEXT = 3;
+    static final int PREV = 4;
+    static final int VOL_UP = 5;
+    static final int VOL_DOWN = 6;
+    static final int DISC = 7;
+    static final int ACK = 8;
+    
+    static final String FOOBAR_PATH = "C:\\Program Files (x86)\\foobar2000\\";
+    static final String PYTHON_PATH = "C:\\Python34\\My programs\\";
 
     private ServerSocket serverSocket;
+    private Socket clientSocket;
     private BufferedInputStream reader;
     private BufferedOutputStream writer;
-    private Socket clientSocket;
     private int port;
     private boolean shouldTerminate;
 
     public Server(int port) {
         serverSocket = null;
+        clientSocket = null;
         reader = null;
         writer = null;
-        clientSocket = null;
         this.port = port;
         shouldTerminate = false;
     }
@@ -36,39 +39,40 @@ public class Server {
     private void serve() {
         try {
             serverSocket = new ServerSocket(port);
-            clientSocket = serverSocket.accept();
-            System.out.println("Connection established");
-            reader = new BufferedInputStream(clientSocket.getInputStream());
-            writer = new BufferedOutputStream(clientSocket.getOutputStream());
-            int input;
-            while (!shouldTerminate && (input = reader.read()) >= 0) {
-                writer.write(process((byte) input));
-                writer.flush();
+            while (true) {
+                clientSocket = serverSocket.accept();
+                System.out.println("Connection established");
+                reader = new BufferedInputStream(clientSocket.getInputStream());
+                writer = new BufferedOutputStream(clientSocket.getOutputStream());
+                shouldTerminate = false;
+                int input;
+                while (!shouldTerminate && (input = reader.read()) >= 0) {
+                    writer.write(process(input));
+                    writer.flush();
+                }
+                System.out.println("Connection closed");
             }
-            close();
-            System.out.println("Connection closed");
         } catch (SocketException e) {
             System.out.println(e.getMessage());
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            close();
         }
     }
 
     private void close() {
         try {
-            if (reader != null)
-                reader.close();
-            if (writer != null)
-                writer.close();
-            if (clientSocket != null)
-                clientSocket.close();
+            clientSocket.close();
+            reader.close();
+            writer.close();
             serverSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private byte process(byte input) {
+    private int process(int input) {
         try {
             String application;
             String arg = "";
@@ -76,32 +80,32 @@ public class Server {
             switch (input) {
                 case LAUNCH:
                     application = "foobar2000.exe";
-                    path = "C:\\Program Files (x86)\\foobar2000\\";
+                    path = FOOBAR_PATH;
                     break;
                 case PLAY_PAUSE:
                     application = "Keypress.py";
                     arg = "play_pause";
-                    path = "C:\\Python34\\My programs\\";
+                    path = PYTHON_PATH;
                     break;
                 case NEXT:
                     application = "Keypress.py";
                     arg = "next";
-                    path = "C:\\Python34\\My programs\\";
+                    path = PYTHON_PATH;
                     break;
                 case PREV:
                     application = "Keypress.py";
                     arg = "prev";
-                    path = "C:\\Python34\\My programs\\";
+                    path = PYTHON_PATH;
                     break;
                 case VOL_UP:
                     application = "Keypress.py";
                     arg = "vol_up";
-                    path = "C:\\Python34\\My programs\\";
+                    path = PYTHON_PATH;
                     break;
                 case VOL_DOWN:
                     application = "Keypress.py";
                     arg = "vol_down";
-                    path = "C:\\Python34\\My programs\\";
+                    path = PYTHON_PATH;
                     break;
                 case DISC:
                     shouldTerminate = true;

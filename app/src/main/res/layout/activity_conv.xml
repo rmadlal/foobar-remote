@@ -7,19 +7,6 @@
     tools:context="com.example.ronmad.foobarremote.FoobarActivity">
 
     <ImageButton
-        android:id="@+id/closeButton"
-        android:src="@drawable/close"
-        android:contentDescription="@string/exit_description"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:background="@android:color/transparent"
-        android:adjustViewBounds="true"
-        android:scaleType="fitXY"
-        android:onClick="sendMessage" />
-
-    <ImageButton
         android:id="@+id/launchButton"
         android:src="@drawable/foobar2k"
         android:contentDescription="@string/launcher_description"

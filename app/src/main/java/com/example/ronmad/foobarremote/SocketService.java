@@ -3,28 +3,23 @@ package com.example.ronmad.foobarremote;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import android.app.IntentService;
+
+import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
-public class SocketService extends IntentService {
+public class SocketService extends Service {
+
+    SocketAddress addr;
+    Socket socket;
     InputStreamReader in;
     OutputStreamWriter out;
-    Socket socket;
-    int connectionAttemptCounter;
-    volatile byte toSend;
-
-    public SocketService() {
-        super("Server");
-    }
+    int response;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -32,58 +27,29 @@ public class SocketService extends IntentService {
     }
 
     @Override
-    protected void onHandleIntent(Intent intent) {
-        try {
-            connectionAttemptCounter++;
-            SocketAddress addr = (InetSocketAddress)intent.getSerializableExtra("Address");
-            socket = new Socket();
-            socket.connect(addr, 2000);
-            synchronized (LoginActivity.class) {
-                LoginActivity.class.notifyAll();
-            }
-            Log.v("TCP Client", "Connection established.");
-            in = new InputStreamReader(socket.getInputStream());
-            out = new OutputStreamWriter(socket.getOutputStream());
-        } catch (ConnectException e) {
-            if (connectionAttemptCounter < 3) {
-                Log.v("TCP Client", "Connection refused. Retrying.");
-                onHandleIntent(intent);
-            } else {
-                Log.e("TCP Client", "Connection refused 3 times. Aborting.");
-            }
-        } catch (SocketTimeoutException e) {
-            Log.e("TCP Client", "Connection timed out. Aborting.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            synchronized (LoginActivity.class) {
-                LoginActivity.class.notifyAll();
-            }
+    public int onStartCommand(Intent intent,int flags, int startId){
+        super.onStartCommand(intent, flags, startId);
+        if (intent == null)  {
+            return START_STICKY;
         }
-        while (socket != null) {
-            //wait for input
-            synchronized (this) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            }
+        addr = (InetSocketAddress)intent.getSerializableExtra(getString(R.string.socketaddress_intent_extra_key));
+        new Thread(() -> {
             try {
-                out.write(toSend);
-                out.flush();
-                int rec;
-                if ((rec = in.read()) >= 0) {
-                    Log.v("Received", String.valueOf(rec));
-                }
+                Log.v("Service", "Connecting...");
+                socket = new Socket();
+                socket.connect(addr, 2000);
+                in = new InputStreamReader(socket.getInputStream());
+                out = new OutputStreamWriter(socket.getOutputStream());
+                Log.v("Service", "Connection established");
             } catch (IOException e) {
-                Log.e("Service", "Server disconnected");
-                disconnect();
+                Log.e("Service", "Connection failed");
+            } finally {
+                synchronized (LoginActivity.class) {
+                    LoginActivity.class.notifyAll();
+                }
             }
-            if (toSend == FoobarActivity.DISC) {
-                disconnect();
-            }
-        }
+        }).start();
+        return START_STICKY;
     }
 
     private final IBinder myBinder = new LocalBinder();
@@ -94,33 +60,37 @@ public class SocketService extends IntentService {
         }
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        connectionAttemptCounter = 0;
-        in = null;
-        out = null;
-        socket = null;
-    }
-
-    public void sendMessage(byte message) {
-        toSend = message;
-        synchronized (this) {
-            notifyAll();
+    public int sendMessage(int message) {
+        response = -1;
+        Thread sendThread = new Thread(() -> {
+            try {
+                if (out != null) {
+                    out.write(message);
+                    out.flush();
+                }
+                response = in.read();
+                Log.v("Service", "Received " + response);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        sendThread.start();
+        try {
+            sendThread.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
+        return response;
     }
 
     public boolean isConnected() {
         return socket != null && socket.isConnected();
     }
 
-    public boolean hasDisconnected() {
-        return socket == null;
-    }
-
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.v("Server", "disconnecting");
         disconnect();
     }
 
@@ -130,15 +100,11 @@ public class SocketService extends IntentService {
                 out.close();
                 in.close();
                 socket.close();
-                socket = null;
-
             }
         }
-        catch (SocketException e) {
-            Log.e("TCP Server", "Transport endpoint is not connected");
-        }
-        catch (Exception e) {
+        catch (IOException e) {
             e.printStackTrace();
         }
+        socket = null;
     }
 }
