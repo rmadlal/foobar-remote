@@ -16,9 +16,9 @@ public class Server {
     static final int VOL_DOWN = 6;
     static final int DISC = 7;
     static final int ACK = 8;
-    
+
+    static final String FOOBAR_APP = "foobar2000.exe";
     static final String FOOBAR_PATH = "C:\\Program Files (x86)\\foobar2000\\";
-    static final String PYTHON_PATH = "C:\\Python34\\My programs\\";
 
     private ServerSocket serverSocket;
     private Socket clientSocket;
@@ -74,38 +74,25 @@ public class Server {
 
     private int process(int input) {
         try {
-            String application;
-            String arg = "";
-            String path;
+            String arg;
             switch (input) {
                 case LAUNCH:
-                    application = "foobar2000.exe";
-                    path = FOOBAR_PATH;
+                    arg = "";
                     break;
                 case PLAY_PAUSE:
-                    application = "Keypress.py";
-                    arg = "play_pause";
-                    path = PYTHON_PATH;
+                    arg = "/playpause";
                     break;
                 case NEXT:
-                    application = "Keypress.py";
-                    arg = "next";
-                    path = PYTHON_PATH;
+                    arg = "/next";
                     break;
                 case PREV:
-                    application = "Keypress.py";
-                    arg = "prev";
-                    path = PYTHON_PATH;
+                    arg = "/prev";
                     break;
                 case VOL_UP:
-                    application = "Keypress.py";
-                    arg = "vol_up";
-                    path = PYTHON_PATH;
+                    arg = "/command:up";
                     break;
                 case VOL_DOWN:
-                    application = "Keypress.py";
-                    arg = "vol_down";
-                    path = PYTHON_PATH;
+                    arg = "/command:down";
                     break;
                 case DISC:
                     shouldTerminate = true;
@@ -113,7 +100,7 @@ public class Server {
                 default:
                     return -1;
             }
-            Runtime.getRuntime().exec(String.format("cmd /c start %s %s", application, arg), null, new File(path));
+            Runtime.getRuntime().exec(String.format("cmd /c start %s %s", FOOBAR_APP, arg), null, new File(FOOBAR_PATH));
         } catch (IOException e) {
             e.printStackTrace();
         }
