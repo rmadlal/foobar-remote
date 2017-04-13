@@ -23,7 +23,7 @@
 
     <ImageButton
         android:id="@+id/playButton"
-        android:src="@drawable/play"
+        android:src="@drawable/ic_play_arrow_black_24dp"
         android:layout_width="60dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/launchButton"
@@ -33,13 +33,13 @@
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
         android:onClick="sendMessage"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginBottom="10dp" />
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginBottom="5dp" />
 
     <ImageButton
         android:id="@+id/pauseButton"
-        android:src="@drawable/pause"
+        android:src="@drawable/ic_pause_black_24dp"
         android:contentDescription="@string/play_pause_description"
         android:layout_width="60dp"
         android:layout_height="wrap_content"
@@ -52,10 +52,11 @@
 
     <ImageButton
         android:id="@+id/prevButton"
-        android:src="@drawable/prev"
+        android:src="@drawable/ic_skip_previous_black_24dp"
         android:contentDescription="@string/prev_description"
         android:layout_width="60dp"
         android:layout_height="wrap_content"
+        android:layout_marginRight="5dp"
         android:layout_below="@id/launchButton"
         android:layout_toLeftOf="@id/playButton"
         android:background="@android:color/transparent"
@@ -63,14 +64,14 @@
         android:scaleType="fitXY"
         android:onClick="sendMessage" />
 
-
-
     <ImageButton
         android:id="@+id/nextButton"
-        android:src="@drawable/next"
+        android:src="@drawable/ic_skip_next_black_24dp"
         android:contentDescription="@string/next_description"
         android:layout_width="60dp"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
         android:layout_below="@id/launchButton"
         android:layout_toRightOf="@id/playButton"
         android:background="@android:color/transparent"
@@ -78,21 +79,45 @@
         android:scaleType="fitXY"
         android:onClick="sendMessage" />
 
-    <Space
-        android:id="@+id/space2"
-        android:layout_width="10dp"
-        android:layout_height="60dp"
-        android:layout_below="@id/playButton"
-        android:layout_centerHorizontal="true" />
+    <ImageButton
+        android:id="@+id/stopButton"
+        android:src="@drawable/ic_stop_black_24dp"
+        android:contentDescription="@string/stop_description"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="5dp"
+        android:layout_below="@id/launchButton"
+        android:layout_toLeftOf="@id/prevButton"
+        android:background="@android:color/transparent"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        android:onClick="sendMessage" />
+
+    <ImageButton
+        android:id="@+id/randomButton"
+        android:src="@drawable/random"
+        android:contentDescription="@string/random_description"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_below="@id/launchButton"
+        android:layout_toRightOf="@id/nextButton"
+        android:background="@android:color/transparent"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        android:onClick="sendMessage" />
 
     <ImageButton
         android:id="@+id/volDownButton"
-        android:src="@drawable/voldown"
+        android:src="@drawable/ic_volume_down_black_24dp"
         android:contentDescription="@string/voldown_description"
         android:layout_width="50dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/playButton"
-        android:layout_toLeftOf="@id/space2"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_alignLeft="@id/stopButton"
+        android:layout_marginLeft="5dp"
         android:background="@android:color/transparent"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
@@ -100,15 +125,28 @@
 
     <ImageButton
         android:id="@+id/volUpButton"
-        android:src="@drawable/volup"
+        android:src="@drawable/ic_volume_up_black_24dp"
         android:contentDescription="@string/volup_description"
         android:layout_width="50dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/playButton"
-        android:layout_toRightOf="@id/space2"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="5dp"
         android:background="@android:color/transparent"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
-        android:onClick="sendMessage" />
+        android:onClick="sendMessage"
+        android:layout_alignTop="@+id/volDownButton"
+        android:layout_toEndOf="@+id/stopButton" />
+
+    <Spinner
+        android:id="@+id/orderSpinner"
+        android:entries="@array/playback_order"
+        android:prompt="@string/order_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/volUpButton"
+        android:layout_alignTop="@+id/volUpButton"
+        android:layout_alignRight="@id/randomButton"
+        android:layout_marginLeft="10dp" />
 
 </RelativeLayout>

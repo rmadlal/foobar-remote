@@ -18,8 +18,23 @@
     <string name="play_pause_description">"PLAY_PAUSE</string>
     <string name="prev_description">"PREV</string>
     <string name="next_description">"NEXT</string>
+    <string name="stop_description">"STOP"</string>
     <string name="volup_description">"VOL_UP</string>
     <string name="voldown_description">"VOL_DOWN</string>
+    <string name="random_description">"RANDOM</string>
     <string name="exit_description">"DISC</string>
+    <string name="order_text">Order:</string>
+
+    <!-- Playback order spinner entries -->
+    <string-array name="playback_order">
+        <item>Default</item>
+        <item>Repeat (playlist)</item>
+        <item>Repeat (track)</item>
+        <item>Random</item>
+        <item>Shuffle (tracks)</item>
+        <item>Shuffle (albums)</item>
+        <item>Shuffle (folders)</item>
+        <item>Playback order...</item>
+    </string-array>
 
 </resources>
