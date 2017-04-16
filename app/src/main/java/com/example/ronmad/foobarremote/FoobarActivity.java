@@ -168,11 +168,9 @@ public class FoobarActivity extends AppCompatActivity {
     }
 
     public void sendMessage(View view) {
-        ImageButton button = (ImageButton) view;
-        int id = button.getId();
+        send(buttonDescToInt(view.getContentDescription().toString()));
 
-        send(buttonDescToInt(button.getContentDescription().toString()));
-
+        int id = view.getId();
         if (id == R.id.playButton || id == R.id.pauseButton ||
                 ((id == R.id.nextButton || id == R.id.randomButton) && !isPlaying) ||
                 id ==R.id.stopButton && isPlaying)

@@ -12,6 +12,8 @@
     <string name="error_invalid_port">Port should be greater than 1024</string>
     <string name="error_field_required">This field is required</string>
     <string name="checkbox_text">Currently playing?</string>
+    <string name="ip_pref_key">savedipkey</string>
+    <string name="port_pref_key">savedportkey</string>
 
     <!-- Strings related to FoobarActivity -->
     <string name="launcher_description">"LAUNCH</string>

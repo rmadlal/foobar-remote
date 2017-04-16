@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
@@ -35,6 +36,8 @@ public class LoginActivity extends AppCompatActivity {
     private View mLoginFormView;
     private Intent intent;
 
+    private SharedPreferences sharedPref;
+
     private SocketService mBoundService;
 
     @Override
@@ -45,6 +48,12 @@ public class LoginActivity extends AppCompatActivity {
         // Set up the login form.
         mIPView = (EditText) findViewById(R.id.ip);
         mPortView = (EditText) findViewById(R.id.port);
+
+        sharedPref = getPreferences(Context.MODE_PRIVATE);
+        mIPView.setText(sharedPref.getString(getString(R.string.ip_pref_key), ""));
+        mIPView.setSelection(mIPView.getText().length());
+        mPortView.setText(sharedPref.getString(getString(R.string.port_pref_key), ""));
+
         mPortView.setOnEditorActionListener((textView, id, keyEvent) -> {
             if (id == R.id.login || id == EditorInfo.IME_NULL) {
                 attemptLogin();
@@ -203,6 +212,10 @@ public class LoginActivity extends AppCompatActivity {
             mAuthTask = null;
             showProgress(false);
             if (success) {
+                sharedPref.edit()
+                          .putString(getString(R.string.ip_pref_key), mIPView.getText().toString())
+                          .putString(getString(R.string.port_pref_key), mPortView.getText().toString())
+                          .apply();
                 startActivity(intent);
             } else {
                 stopService(serviceIntent);

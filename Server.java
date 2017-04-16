@@ -78,7 +78,7 @@ public class Server {
                     arg = "/command:stop";
                     break;
                 case RANDOM:
-                    arg = "/command:random";
+                    arg = "/runcmd=Playback/Random";
                     break;
                 case VOL_UP:
                     arg = "/command:up";
