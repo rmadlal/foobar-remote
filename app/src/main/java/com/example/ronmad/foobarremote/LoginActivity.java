@@ -27,18 +27,17 @@ import java.net.SocketAddress;
 public class LoginActivity extends AppCompatActivity {
 
     private UserLoginTask mAuthTask = null;
-    private SocketAddress addr = null;
 
     // UI references.
     private EditText mIPView;
     private EditText mPortView;
     private View mProgressView;
-    private View mLoginFormView;
+    private View[] loginViews;
+
     private Intent intent;
-
-    private SharedPreferences sharedPref;
-
+    private SocketAddress addr = null;
     private SocketService mBoundService;
+    private SharedPreferences sharedPref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,14 +61,14 @@ public class LoginActivity extends AppCompatActivity {
             return false;
         });
 
-        Button mIPSignInButton = (Button) findViewById(R.id.ip_sign_in_button);
-        mIPSignInButton.setOnClickListener(view -> attemptLogin());
-
-        CheckBox isPlayingBox = (CheckBox) findViewById(R.id.checkBox);
+        CheckBox isPlayingBox = (CheckBox) findViewById(R.id.isPlayingCheckBox);
         isPlayingBox.setOnCheckedChangeListener((compoundButton, b) -> intent.putExtra(getString(R.string.isplaying_intent_extra_key), b));
 
-        mLoginFormView = findViewById(R.id.login_form);
-        mProgressView = findViewById(R.id.login_progress);
+        Button mIPSignInButton = (Button) findViewById(R.id.signInButton);
+        mIPSignInButton.setOnClickListener(view -> attemptLogin());
+
+        loginViews = new View[] { mIPView, mPortView, isPlayingBox, mIPSignInButton };
+        mProgressView = findViewById(R.id.loginProgress);
     }
 
     /**
@@ -138,14 +137,16 @@ public class LoginActivity extends AppCompatActivity {
     private void showProgress(final boolean show) {
         int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-        mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-        mLoginFormView.animate().setDuration(shortAnimTime).alpha(
-                show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            }
-        });
+        for (View view : loginViews) {
+            view.setVisibility(show ? View.GONE : View.VISIBLE);
+            view.animate().setDuration(shortAnimTime).alpha(
+                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    view.setVisibility(show ? View.GONE : View.VISIBLE);
+                }
+            });
+        }
 
         mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
         mProgressView.animate().setDuration(shortAnimTime).alpha(
@@ -155,7 +156,6 @@ public class LoginActivity extends AppCompatActivity {
                 mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
             }
         });
-
     }
 
     private ServiceConnection mConnection = new ServiceConnection() {

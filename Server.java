@@ -6,23 +6,41 @@ import java.net.*;
 
 public class Server {
 
-    static final int LAUNCH = 1;
-    static final int PLAY_PAUSE = 2;
-    static final int NEXT = 3;
-    static final int PREV = 4;
-    static final int STOP = 5;
-    static final int RANDOM = 6;
-    static final int VOL_UP = 7;
-    static final int VOL_DOWN = 8;
-    static final int DEFAULT = 9;
-    static final int REPEAT_PLAYLIST = 10;
-    static final int REPEAT_TRACK = 11;
-    static final int ORDER_RANDOM = 12;
-    static final int SHUFFLE_TRACKS = 13;
-    static final int SHUFFLE_ALBUMS = 14;
-    static final int SHUFFLE_FOLDERS = 15;
-    static final int DISC = 16;
-    static final int ACK = 17;
+    static final int LAUNCH = 0;
+    static final int PLAY_PAUSE = 1;
+    static final int NEXT = 2;
+    static final int PREV = 3;
+    static final int STOP = 4;
+    static final int RANDOM = 5;
+    static final int VOL_UP = 6;
+    static final int VOL_DOWN = 7;
+    static final int DEFAULT = 8;
+    static final int REPEAT_PLAYLIST = 9;
+    static final int REPEAT_TRACK = 10;
+    static final int ORDER_RANDOM = 11;
+    static final int SHUFFLE_TRACKS = 12;
+    static final int SHUFFLE_ALBUMS = 13;
+    static final int SHUFFLE_FOLDERS = 14;
+    static final int DISC = 15;
+    static final int ACK = 16;
+
+    static final String[] CMD_ARGS = {
+            "",
+            "/playpause",
+            "/next",
+            "/prev",
+            "/command:stop",
+            "/runcmd=Playback/Random",
+            "/command:up",
+            "/command:down",
+            "/runcmd=Playback/Order/Default",
+            "\"/runcmd=Playback/Order/Repeat (playlist)\"",
+            "\"/runcmd=Playback/Order/Repeat (track)\"",
+            "/runcmd=Playback/Order/Random",
+            "\"/runcmd=Playback/Order/Shuffle (tracks)\"",
+            "\"/runcmd=Playback/Order/Shuffle (albums)\"",
+            "\"/runcmd=Playback/Order/Shuffle (folders)\""
+    };
 
     static final String FOOBAR_APP = "foobar2000.exe";
     static final String FOOBAR_PATH = "C:\\Program Files (x86)\\foobar2000\\";
@@ -47,7 +65,7 @@ public class Server {
                 System.out.println("Connection established");
                 shouldTerminate = false;
                 int input;
-                while (!shouldTerminate && (input = reader.read()) >= 0) {
+                while (!shouldTerminate && (input = reader.read()) != -1) {
                     writer.write(process(input));
                     writer.flush();
                 }
@@ -60,62 +78,17 @@ public class Server {
 
     private int process(int input) {
         try {
-            String arg;
-            switch (input) {
-                case LAUNCH:
-                    arg = "";
-                    break;
-                case PLAY_PAUSE:
-                    arg = "/playpause";
-                    break;
-                case NEXT:
-                    arg = "/next";
-                    break;
-                case PREV:
-                    arg = "/prev";
-                    break;
-                case STOP:
-                    arg = "/command:stop";
-                    break;
-                case RANDOM:
-                    arg = "/runcmd=Playback/Random";
-                    break;
-                case VOL_UP:
-                    arg = "/command:up";
-                    break;
-                case VOL_DOWN:
-                    arg = "/command:down";
-                    break;
-                case DEFAULT:
-                    arg = "/runcmd=Playback/Order/Default";
-                    break;
-                case REPEAT_PLAYLIST:
-                    arg = "\"/runcmd=Playback/Order/Repeat (playlist)\"";
-                    break;
-                case REPEAT_TRACK:
-                    arg = "\"/runcmd=Playback/Order/Repeat (track)\"";
-                    break;
-                case ORDER_RANDOM:
-                    arg = "/runcmd=Playback/Order/Random";
-                    break;
-                case SHUFFLE_TRACKS:
-                    arg = "\"/runcmd=Playback/Order/Shuffle (tracks)\"";
-                    break;
-                case SHUFFLE_ALBUMS:
-                    arg = "\"/runcmd=Playback/Order/Shuffle (albums)\"";
-                    break;
-                case SHUFFLE_FOLDERS:
-                    arg = "\"/runcmd=Playback/Order/Shuffle (folders)\"";
-                    break;
-                case DISC:
-                    shouldTerminate = true;
-                    return ACK;
-                default:
-                    return -1;
+            if (input == DISC) {
+                shouldTerminate = true;
+                return ACK;
             }
+            String arg = CMD_ARGS[input];
             Runtime.getRuntime().exec(String.format("cmd /c start %s %s", FOOBAR_APP, arg), null, new File(FOOBAR_PATH));
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (ArrayIndexOutOfBoundsException e) {
+            shouldTerminate = true;
+            return -1;
         }
         return ACK;
     }

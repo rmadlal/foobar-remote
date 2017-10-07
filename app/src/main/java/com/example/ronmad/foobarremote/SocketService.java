@@ -1,5 +1,6 @@
 package com.example.ronmad.foobarremote;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -11,15 +12,23 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 
 public class SocketService extends Service {
 
     SocketAddress addr;
     Socket socket;
-    InputStreamReader in;
+    BufferedReader in;
     OutputStreamWriter out;
-    int response;
+
+    static final int STR_WHAT = 200;
+
+    FoobarActivity.MessageHandler messageHandler;
+    String response;
+    int responseNum;
+    boolean firstAck;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -33,14 +42,41 @@ public class SocketService extends Service {
             return START_STICKY;
         }
         addr = (InetSocketAddress)intent.getSerializableExtra(getString(R.string.socketaddress_intent_extra_key));
+        firstAck = true;
+        responseNum = -1;
         new Thread(() -> {
             try {
                 Log.v("Service", "Connecting...");
                 socket = new Socket();
                 socket.connect(addr, 2000);
-                in = new InputStreamReader(socket.getInputStream());
-                out = new OutputStreamWriter(socket.getOutputStream());
+                synchronized (LoginActivity.class) {
+                    LoginActivity.class.notifyAll();
+                }
                 Log.v("Service", "Connection established");
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                out = new OutputStreamWriter(socket.getOutputStream());
+                while (true) {
+                    response = in.readLine();
+                    if (response == null) {
+                        break;
+                    }
+                    Log.v("Service", "Received " + response);
+                    try {
+                        responseNum = Integer.parseInt(response);
+                    }
+                    catch (NumberFormatException e) {
+                        responseNum = -1;
+                    }
+                    if (responseNum == FoobarActivity.ACK && firstAck) {
+                        synchronized (LoginActivity.class) {
+                            LoginActivity.class.notifyAll();
+                        }
+                        firstAck = false;
+                    }
+                    else if (messageHandler != null) {
+                        messageHandler.sendEmptyMessage(responseNum != -1 ? responseNum : STR_WHAT);
+                    }
+                }
             } catch (IOException e) {
                 Log.e("Service", "Connection failed");
             } finally {
@@ -60,27 +96,18 @@ public class SocketService extends Service {
         }
     }
 
-    public int sendMessage(int message) {
-        response = -1;
-        Thread sendThread = new Thread(() -> {
+    public void sendMessage(int message) {
+        new Thread(() -> {
             try {
                 if (out != null) {
                     out.write(message);
                     out.flush();
                 }
-                response = in.read();
-                Log.v("Service", "Received " + response);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        });
-        sendThread.start();
-        try {
-            sendThread.join();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        return response;
+        })
+        .start();
     }
 
     public boolean isConnected() {

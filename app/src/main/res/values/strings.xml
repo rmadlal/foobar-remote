@@ -26,6 +26,8 @@
     <string name="random_description">"RANDOM</string>
     <string name="exit_description">"DISC</string>
     <string name="order_text">Order:</string>
+    <string name="now_playing">Now playing:</string>
+    <string name="artist_track">Artist - Track</string>
 
     <!-- Playback order spinner entries -->
     <string-array name="playback_order">
